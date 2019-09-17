@@ -66,7 +66,7 @@ function example8_resultIs5passing() {
     console.log(x);
     result = x;
   }
-  console.assert(result === 5, "result: " + typeof result + ", " + result);
+  console.assert(result === 5, "result: ", typeof result, result);
 }
 evaluate(example8_resultIs5passing);
 
@@ -76,7 +76,7 @@ function example8_resultIs5failing() {
     console.log(x);
     result = x;
   }
-  console.assert(result === 5, "result: " + typeof result + ", " + result);
+  console.assert(result === 5, "result: ", typeof result, result);
 }
 evaluate(example8_resultIs5failing);
 
