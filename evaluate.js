@@ -1,7 +1,5 @@
 function evaluate(func) {
 
-  const evaluator = new Function('console', functionBody(func));
-
   const assertLog = [];
 
   const pseudoConsole = Object.create(console);
@@ -21,10 +19,11 @@ function evaluate(func) {
     logLog.push(args)
   }
 
+  const evaluator = new Function('console', functionBody(func));
   try {
     evaluator(pseudoConsole);
   } catch (err) {
-    renderErrorLog(err, func);
+    console.error('%c' + err.name + ': "' + err.message + '"', 'color: red', '\n  ' + func.name + ' line ' + (err.lineNumber - 3));
     renderTutorLink(func, "red");
     return err;
   }
@@ -35,7 +34,23 @@ function evaluate(func) {
       ? "green"
       : "orange";
 
-  renderLog(assertLog, logLog, mainColor)
+  console.groupCollapsed("%c" + func.name, "color:" + mainColor);
+  {
+    for (let entry of assertLog) {
+      entry.assertion
+        ? console.log('%cPASS: ', 'color:green', ...entry.messages)
+        : console.log('%cFAIL: ', 'color:orange', ...entry.messages)
+    }
+    if (logLog.length !== 0) {
+      console.groupCollapsed('logs:');
+      {
+        logLog.forEach(logs => console.log(...logs));
+      }
+      console.groupEnd();
+    }
+  }
+  console.groupEnd();
+
   renderTutorLink(func, mainColor);
 
   return assertLog;
@@ -47,40 +62,6 @@ function evaluate(func) {
     const bodyStart = funcString.indexOf("{") + 1;
     const bodyEnd = funcString.lastIndexOf("}");
     return funcString.substring(bodyStart, bodyEnd)
-  }
-
-  function renderErrorLog(err, func) {
-    console.groupCollapsed('%cError: ' + func.name, 'color:red');
-    {
-      console.error(func.name + ' threw an error on line ' + (err.lineNumber - 2) + ':   \n' + err.name + ':', '"' + err.message + '"');
-    }
-    console.groupEnd();
-  }
-
-  function renderLog(assertLog, logLog, color) {
-    console.groupCollapsed("%c" + func.name, "color:" + color);
-    {
-      renderAssertLog(assertLog, mainColor);
-      logLog.length !== 0 ? renderLogLog(logLog) : null;
-    }
-    console.groupEnd();
-
-  }
-
-  function renderAssertLog(log) {
-    log.forEach(entry =>
-      entry.assertion
-        ? console.log('%cPASS: ', 'color:green', ...entry.messages)
-        : console.log('%cFAIL: ', 'color:orange', ...entry.messages)
-    )
-  }
-
-  function renderLogLog(logs) {
-    console.groupCollapsed('logs:');
-    {
-      logs.forEach(logs => console.log(...logs));
-    }
-    console.groupEnd();
   }
 
   function renderTutorLink(func, color) {
