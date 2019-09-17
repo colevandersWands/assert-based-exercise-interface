@@ -41,7 +41,9 @@ function evaluate(func) {
         ? console.log('%cPASS: ', 'color:green', ...entry.messages)
         : console.log('%cFAIL: ', 'color:orange', ...entry.messages)
     }
-    if (logLog.length !== 0) {
+    if (logLog.length !== 0 && assertLog.length == 0) {
+      logLog.forEach(logs => console.log(...logs));
+    } else if (logLog.length !== 0) {
       console.groupCollapsed('logs:');
       {
         logLog.forEach(logs => console.log(...logs));

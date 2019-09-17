@@ -27,7 +27,7 @@ function example4_consoleLogs() {
   console.log(msg);
   console.assert(msg, "msg is not an empty string");
 
-  const msg2 = "below all assert statements";
+  const msg2 = "collapsed below all assert statements";
   console.assert(msg2, "msg2 is not an empty string");
   console.log(msg2);
 }
@@ -37,6 +37,8 @@ evaluate(example4_consoleLogs);
 function example5_noAsserts() {
   const msg = "no asserts? report is black!";
   console.log(msg);
+  const msg2 = "and logs are not collapsed";
+  console.log(msg2);
 }
 evaluate(example5_noAsserts);
 
