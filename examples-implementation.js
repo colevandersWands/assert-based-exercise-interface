@@ -1,3 +1,12 @@
+
+{
+  const pageTitle = 'implementation';
+  const header = document.createElement("h2");
+  header.innerHTML = pageTitle;
+  document.body.appendChild(header);
+  console.groupCollapsed(pageTitle);
+}
+
 function example1_allAssertsPass() {
   console.assert(true, "first assert");
   console.assert(0 === 0, "second assert");
@@ -44,6 +53,8 @@ evaluate(example5_noAsserts);
 
 
 function example6_runtimeError() {
+  console.assert(true, "adfasd")
+  console.log("ew")
   const x = 4;
   x();
 }
@@ -84,3 +95,5 @@ evaluate(example8_resultIs5failing);
 
 
 
+
+console.groupEnd();
