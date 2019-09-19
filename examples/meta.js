@@ -9,7 +9,7 @@
 
 evaluate(evaluate);
 
-evaluate(evaluate, [{ name: "behavioring implementation", args: [() => console.assert(true)], expected: "a full log object" }]);
+evaluate(evaluate, [{ name: "behavioring implementation", args: [function behaim() { console.assert(true) }], expected: "a full log object" }]);
 
 const funcy = x => x;
 const funcyCases = [
