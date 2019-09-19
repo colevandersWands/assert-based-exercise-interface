@@ -10,7 +10,7 @@ function evaluate(func, cases) {
     console.error("TypeError: first argument must be a function, received:", func);
     return;
   }
-  if (!(cases instanceof Array || cases === undefined)) {
+  if (!(cases instanceof Array) && arguments.length > 1) {
     console.error("TypeError: second argument must be an array, received:", cases);
     return;
   }
@@ -23,15 +23,11 @@ function evaluate(func, cases) {
     ? evaluate.assessBehavior(func, cases)
     : evaluate.assessImplementation(func)
 
-  // console.log(evaluationLog);
-
   evaluate.renderLogs(evaluationLog, isBehavior);
   evaluate.renderStudyLink(func, evaluationLog.status, isBehavior);
 
 }
 
-
-// behavioral status is based on tests passing or error
 evaluate.assessBehavior = function (func, cases) {
 
   const report = {
@@ -39,8 +35,8 @@ evaluate.assessBehavior = function (func, cases) {
   }
 
   if (!(cases instanceof Array) || cases.length === 0) {
-    // report.err = new Error("test cases array is empty");
     report.empty = true;
+    report.status = 4;
     return report;
   }
 
@@ -65,44 +61,19 @@ evaluate.assessBehavior = function (func, cases) {
 evaluate.assesTestCases = function (func, cases) {
   const testLogs = [];
   for (let testCase of cases) {
-    const invalidReport = { status: 4 };
-    if (testCase.constructor.name !== "Object") {
-      invalidReport.invalidTestCase = new TypeError("is not an Object");
-      invalidReport.testCase = testCase;
-      testLogs.push(invalidReport);
-      continue;
-    };
 
-    if (!testCase.hasOwnProperty("name")) {
-      invalidReport.name = new Error("does not exist");
-    }
-    else if (typeof testCase.name !== "string") {
-      invalidReport.name = new TypeError("is not a string");
-    }
-
-    if (!testCase.hasOwnProperty("args")) {
-      invalidReport.args = new Error("does not exist");
-    }
-    else if (testCase.args.constructor.name !== "Array") {
-      invalidReport.args = new TypeError("is not an Array");
-    }
-
-    if (!testCase.hasOwnProperty("expected")) {
-      invalidReport.expected = new Error("does not exist");
-    }
-    if (Object.keys(invalidReport).length !== 1) {
-      testLogs.push(Object.assign(testCase, invalidReport));
+    const validationLog = this.validateTestCase(testCase);
+    if (validationLog !== null) {
+      testLogs.push(validationLog);
       continue;
     }
 
-    const expected = testCase.expected;
-    const args = testCase.args;
+    const behaviorLog = {};
 
-    const implementationLog = evaluate.assessImplementation(func, args);
-    const behaviorLog = {
-      ...testCase,
-      implementationLog,
-    }
+    Object.assign(behaviorLog, testCase);
+
+    const implementationLog = evaluate.assessImplementation(func, testCase.args);
+    behaviorLog.implementationLog = implementationLog;
 
     if (implementationLog.status === 0) {
       behaviorLog.err = implementationLog.err;
@@ -110,25 +81,12 @@ evaluate.assesTestCases = function (func, cases) {
       testLogs.push(behaviorLog);
       continue;
     } else {
-      behaviorLog.result = implementationLog.result
-      delete implementationLog.result
-      behaviorLog.implementationLog = implementationLog
+      behaviorLog.actual = implementationLog.actual
     }
 
-    const actual = behaviorLog.result;
-    let pass;
-    if (typeof expected === 'object' && expected !== null) {
-      const _actual = JSON.stringify(actual);
-      const _expected = JSON.stringify(expected);
-      pass = _actual === _expected;
-    } else if (expected !== expected) {
-      pass = actual !== actual;
-    } else {
-      pass = actual === expected;
-    };
-    behaviorLog.pass = pass;
+    behaviorLog.pass = this.compare(behaviorLog.actual, behaviorLog.expected);
 
-    behaviorLog.status = pass
+    behaviorLog.status = behaviorLog.pass
       && (implementationLog.status === 1
         || implementationLog.status == 2)
       ? 2
@@ -137,6 +95,58 @@ evaluate.assesTestCases = function (func, cases) {
     testLogs.push(behaviorLog);
   }
   return testLogs
+}
+
+evaluate.validateTestCase = function (testCase) {
+  const invalidReport = {};
+
+  if (testCase.constructor.name !== "Object") {
+    invalidReport.invalidTestCase = new TypeError("is not an Object");
+    invalidReport.testCase = testCase;
+    invalidReport.status = 4;
+    return invalidReport;
+  };
+
+  if (!testCase.hasOwnProperty("name")) {
+    invalidReport.name = new Error("does not exist");
+  }
+  else if (typeof testCase.name !== "string") {
+    invalidReport.name = new TypeError("is not a string");
+  }
+
+  if (!testCase.hasOwnProperty("args")) {
+    invalidReport.args = new Error("does not exist");
+  }
+  else if (testCase.args.constructor.name !== "Array") {
+    invalidReport.args = new TypeError("is not an Array");
+  }
+
+  if (!testCase.hasOwnProperty("expected")) {
+    invalidReport.expected = new Error("does not exist");
+  }
+  if (Object.keys(invalidReport).length !== 0) {
+    const testCaseCopy = Object.assign({}, testCase);
+    const x = Object.assign(testCaseCopy, invalidReport);
+    testCaseCopy.status = 4;
+    return testCaseCopy;
+  }
+
+  return null;
+
+}
+
+evaluate.compare = function (actual, expected) {
+  let areTheSame;
+  if (typeof expected === 'object' && expected !== null) {
+    const _actual = JSON.stringify(actual);
+    const _expected = JSON.stringify(expected);
+    areTheSame = _actual === _expected;
+  } else if (expected !== expected) {
+    areTheSame = actual !== actual;
+  } else {
+    areTheSame = actual === expected;
+  }
+  return areTheSame;
 }
 
 // implementational status is based on asserts or error
@@ -151,12 +161,12 @@ evaluate.assessImplementation = function (func, args) {
 
   const consoleCatcher = evaluate.buildConsoleCatcher();
 
-  let result;
+  let actual;
   let err;
 
   const evaluator = new Function('console', 'args', 'return (' + func.toString() + ')(...args)');
   try {
-    result = evaluator(consoleCatcher, args);
+    actual = evaluator(consoleCatcher, args);
   } catch (error) {
     err = error;
   }
@@ -180,9 +190,7 @@ evaluate.assessImplementation = function (func, args) {
     ? report.logs = consoleCatcher.logs
     : null
 
-  result !== undefined
-    ? report.result = result
-    : null
+  report.actual = actual
 
   err !== undefined
     ? report.err = err
@@ -215,7 +223,6 @@ evaluate.buildConsoleCatcher = function () {
 }
 
 // views
-
 evaluate.renderLogs = function (log, isBehavior) {
   const mainColor = log.status === 0
     ? "red" // function errored out
@@ -282,30 +289,26 @@ evaluate.renderBehavior = function (log) {
 
 }
 
-evaluate.renderTestLog = function (entry, collapse) {
+evaluate.renderTestLog = function (entry) {
 
   const caseColor = entry.pass
     ? 'green'
     : 'orange'
 
-  if (collapse) {
-    console.groupCollapsed('%ctest:', 'font-weight: bold; color:' + caseColor);
-  }
   {
-    console.log("%cactual: ", 'font-weight: bold; color:' + caseColor, typeof entry.result, entry.result)
+    console.log("%cactual: ", 'font-weight: bold; color:' + caseColor, typeof entry.actual, entry.actual)
 
     console.log("%cexpected: ", 'font-weight: bold; color:blue', typeof entry.expected + ", " + entry.expected);
 
     if (entry.args.length === 1) {
       console.log('%carg:', 'font-weight: bold; color:blue', typeof entry.args[0], entry.args[0]);
     } else {
+      // const renderedArgs = entry.args.map(arg => [typeof arg, arg]);
+      // console.log('%cargs: ', 'font-weight: bold; color:blue', renderedArgs);
       for (let i in entry.args) {
         console.log('%carg ' + i + ': ', 'font-weight: bold; color:blue', typeof entry.args[i], entry.args[i]);
       }
     }
-  }
-  if (collapse) {
-    console.groupEnd();
   }
 
 }
@@ -314,7 +317,6 @@ evaluate.renderTestLog = function (entry, collapse) {
 evaluate.renderError = function (log) {
   const err = log.err;
   console.error('%c' + err.name + ': "' + err.message + '"', 'color: red', '\n  ' + log.name + ' line ' + (err.lineNumber - 3));
-
 }
 
 evaluate.renderImplementation = function (log) {

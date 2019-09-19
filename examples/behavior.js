@@ -32,8 +32,8 @@ evaluate(errorsOut, errorsCases);
 
 
 const passCases = [
-  { name: 'first', args: [0], expected: 0 },
-  { name: 'second', args: ["hi!"], expected: "hi!" },
+  { name: 'first', args: [0, 1, "E"], expected: 0 },
+  { name: 'second', args: ["hi!", 4, null], expected: "hi!" },
   { name: 'third', args: [1], expected: 1 },
 ];
 function passFunc(x) {
@@ -74,4 +74,8 @@ function noFunc2(x) {
 }
 evaluate(noFunc2, memeCases);
 
-console.groupEnd();
+
+{
+  console.groupEnd();
+  document.body.appendChild(document.createElement('hr'));
+}

@@ -51,4 +51,8 @@ function passTestsFailAsserts(x) {
 }
 evaluate(passTestsFailAsserts, mixedCases);
 
-console.groupEnd();
+
+{
+  console.groupEnd();
+  document.body.appendChild(document.createElement('hr'));
+}

@@ -95,5 +95,7 @@ evaluate(example8_resultIs5failing);
 
 
 
-
-console.groupEnd();
+{
+  console.groupEnd();
+  document.body.appendChild(document.createElement('hr'));
+}
