@@ -4,6 +4,8 @@ a function that turns the browser and devtools into a study environment for java
 
 play with the live examples [right here](https://colevanderswands.github.io/study-function/) (it's not so interesting if you don't open your devtools' debugger)
 
+(no supprt for event loop exercises yet)
+
 ---
 
 ## Exercise Types:
