@@ -366,9 +366,11 @@ evaluate.renderStudyLink = function (func, status, isBehavior) {
     : "http://www.pythontutor.com/live.html#code=" + deTabbed + "&cumulative=false&curInstr=2&heapPrimitives=nevernest&mode=display&origin=opt-live.js&py=js&rawInputLstJSON=%5B%5D&textReferences=false";
 
   const a = document.createElement('a');
-  a.innerHTML = isBehavior
-    ? '<strong>' + func.name + '</strong> behavior:  <i>Parsonizer</i>'
-    : '<strong>' + func.name + '</strong> implementation:  <i>JS Tutor</i>'
+  const viztool = isBehavior
+    ? 'Parsonizer'
+    : 'JS Tutor'
+
+  a.innerHTML = '<strong>' + func.name + '</strong>:  <i>' + viztool + '</i>';
 
   a.href = url;
   a.target = '_blank';
