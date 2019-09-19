@@ -2,7 +2,7 @@
 
 a function that turns the browser and devtools into a study environment for javascript exercises
 
-it's not so interesting if you don't open your devtools' debugger
+play with the live examples [right here](https://colevanderswands.github.io/study-function/) (it's not so interesting if you don't open your devtools' debugger)
 
 ---
 
