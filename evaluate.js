@@ -275,6 +275,11 @@ evaluate.renderLogs = function (log, isBehavior) {
 
   console.groupCollapsed("%c" + log.name + nativity + ':', "color:" + mainColor, exerciseType);
   {
+
+    !isBehavior && log.err
+      ? this.renderError(log)
+      : null
+
     isBehavior
       ? this.renderBehavior(log)
       : this.renderImplementation(log);
@@ -311,10 +316,7 @@ evaluate.renderBehavior = function (log) {
     } else {
       console.groupCollapsed('%c' + entry.name, 'color:' + testColor);
       {
-        entry.status === 0
-          ? null
-          : this.renderTestLog(entry)
-
+        this.renderTestLog(entry)
         this.renderImplementation(entry.implementationLog);
       }
       console.groupEnd();
@@ -324,6 +326,7 @@ evaluate.renderBehavior = function (log) {
 
 }
 
+
 evaluate.renderTestLog = function (entry) {
 
   const caseColor = entry.pass
@@ -331,7 +334,9 @@ evaluate.renderTestLog = function (entry) {
     : 'orange'
 
   {
-    console.log("%cactual: ", 'font-weight: bold; color:' + caseColor, typeof entry.actual, entry.actual)
+    entry.err
+      ? this.renderError(entry)
+      : console.log("%cactual: ", 'font-weight: bold; color:' + caseColor, typeof entry.actual, entry.actual)
 
     console.log("%cexpected: ", 'font-weight: bold; color:blue', typeof entry.expected + ", " + entry.expected);
 
@@ -349,16 +354,7 @@ evaluate.renderTestLog = function (entry) {
 }
 
 
-evaluate.renderError = function (log) {
-  const err = log.err;
-  console.error('%c' + err.name + ': "' + err.message + '"', 'color: red', '\n  ' + log.name + ' line ' + (err.lineNumber - 3));
-}
-
 evaluate.renderImplementation = function (log) {
-
-  log.err
-    ? this.renderError(log)
-    : null
 
   if (log.asserts) {
     const assertsColor = log.asserts.every(entry => entry.assertion)
@@ -385,6 +381,12 @@ evaluate.renderImplementation = function (log) {
     }
     console.groupEnd();
   }
+}
+
+
+evaluate.renderError = function (log) {
+  const err = log.err;
+  console.error('%c' + err.name + ': "' + err.message + '"', 'color: red', '\n  ' + log.name + ' line ' + (err.lineNumber - 3));
 }
 
 evaluate.renderStudyLink = function (func, status, isBehavior, isNative) {
