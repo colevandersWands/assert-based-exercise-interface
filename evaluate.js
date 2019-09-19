@@ -1,9 +1,3 @@
-/* in this refactor
-  modularize implementation analysis & behavior analyses
-    behavioral can run implementation for each test case
-
-*/
-
 function evaluate(func, cases) {
 
   if (typeof func !== "function") {
@@ -15,7 +9,7 @@ function evaluate(func, cases) {
     return;
   }
 
-  const isBehavior = cases instanceof Array
+  const isBehavior = cases
     ? true
     : false
 
@@ -34,7 +28,7 @@ evaluate.assessBehavior = function (func, cases) {
     name: func.name
   }
 
-  if (!(cases instanceof Array) || cases.length === 0) {
+  if (cases.length === 0) {
     report.empty = true;
     report.status = 4;
     return report;
