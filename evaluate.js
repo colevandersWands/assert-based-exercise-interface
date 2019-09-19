@@ -171,16 +171,13 @@ evaluate.assessImplementation = function (func, args) {
     err = error;
   }
 
-  const implementationStatus = err
-    ? 0 // "ERR:  "
+  report.status = err
+    ? 0 // there was an error
     : consoleCatcher.asserts.length === 0
-      ? 1 // ":     "
+      ? 1 // no error or asserts
       : consoleCatcher.asserts.every(entry => entry.assertion)
-        ? 2 // "PASS: "
-        : 3 // "FAIL: "
-
-
-  report.status = implementationStatus;
+        ? 2 // all asserts pass
+        : 3 // at least one assert fails
 
   consoleCatcher.asserts.length !== 0
     ? report.asserts = consoleCatcher.asserts
