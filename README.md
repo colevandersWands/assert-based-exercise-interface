@@ -10,7 +10,7 @@ play with the live examples [right here](https://colevanderswands.github.io/stud
 
 IMPLEMENTATION
 * passing a function into evaluate without any test cases will just evaluate any assert statements within the function
-* these exercises are for practicing small snippets and learning how to debug, poke around, and understand memory 
+* these exercises are for practicing small snippets and learning how to debug, poke around, and understand memory
 * implementation exercises will open up in pythontutor, since they're about how the snippet executes
 
 BEHAVIOR
@@ -29,3 +29,14 @@ Color Codings:
 * PURPLE: there was at least one invalid test case
 * BLACK: no test cases or asserts
 
+---
+
+### Native Function Support
+
+this function can also be used to evaluate native JS functions, it will label them with ```(native)```
+
+---
+
+### Meta-Evaluation
+
+just for fun (and to cover all cases), evaluate can evaluate itself

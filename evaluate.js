@@ -1,32 +1,56 @@
-function evaluate(func, cases) {
+const evaluate = function (func, cases) {
 
   if (typeof func !== "function") {
     console.error("TypeError: first argument must be a function, received:", func);
-    return;
+    return new TypeError("first argument must be a function");
   }
   if (!(cases instanceof Array) && arguments.length > 1) {
     console.error("TypeError: second argument must be an array, received:", cases);
-    return;
+    return new TypeError("second argument must be an array");
   }
 
-  const isBehavior = cases
-    ? true
-    : false
+  const isBehavior = cases ? true : false;
+
+  const isNative = evaluate.isNativeFunction(func);
 
   const evaluationLog = isBehavior
-    ? evaluate.assessBehavior(func, cases)
-    : evaluate.assessImplementation(func)
+    ? evaluate.assessBehavior(func, cases, isNative)
+    : evaluate.assessImplementation(func, isNative)
 
   evaluate.renderLogs(evaluationLog, isBehavior);
-  evaluate.renderStudyLink(func, evaluationLog.status, isBehavior);
+  evaluate.renderStudyLink(func, evaluationLog.status, isBehavior, isNative);
+
+  return evaluationLog;
 
 }
 
-evaluate.assessBehavior = function (func, cases) {
+
+evaluate.isNativeFunction = function (arg) {
+  // https://davidwalsh.name/detect-native-function
+
+  const toString = Object.prototype.toString;
+  const fnToString = Function.prototype.toString;
+  const reHostCtor = /^\[object .+?Constructor\]$/;
+  const reNative = RegExp('^' +
+    String(toString)
+      .replace(/[.*+?^${}()|[\]\/\\]/g, '\\$&')
+      .replace(/toString|(function).*?(?=\\\()| for .+?(?=\\\])/g, '$1.*?') + '$'
+  );
+
+  const argType = typeof arg;
+  return argType == 'function'
+    ? reNative.test(fnToString.call(arg))
+    : (arg && argType == 'object' && reHostCtor.test(toString.call(arg))) || false;
+}
+
+evaluate.assessBehavior = function (func, cases, isNative) {
 
   const report = {
     name: func.name
   }
+  isNative
+    ? report.isNative = true
+    : null
 
   if (cases.length === 0) {
     report.empty = true;
@@ -34,7 +58,7 @@ evaluate.assessBehavior = function (func, cases) {
     return report;
   }
 
-  const testLogs = this.assesTestCases(func, cases);
+  const testLogs = this.assesTestCases(func, cases, isNative);
 
   const behaviorStatus = !testLogs.every(entry => !entry.err)
     ? 0 // a test case threw an error
@@ -52,7 +76,8 @@ evaluate.assessBehavior = function (func, cases) {
   return report;
 }
 
-evaluate.assesTestCases = function (func, cases) {
+evaluate.assesTestCases = function (func, cases, isNative) {
+
   const testLogs = [];
   for (let testCase of cases) {
 
@@ -66,7 +91,7 @@ evaluate.assesTestCases = function (func, cases) {
 
     Object.assign(behaviorLog, testCase);
 
-    const implementationLog = evaluate.assessImplementation(func, testCase.args);
+    const implementationLog = evaluate.assessImplementation(func, isNative, testCase.args);
     behaviorLog.implementationLog = implementationLog;
 
     if (implementationLog.status === 0) {
@@ -144,7 +169,8 @@ evaluate.compare = function (actual, expected) {
 }
 
 // implementational status is based on asserts or error
-evaluate.assessImplementation = function (func, args) {
+evaluate.assessImplementation = function (func, isNative, args) {
+
   args = args instanceof Array
     ? args
     : []
@@ -152,17 +178,28 @@ evaluate.assessImplementation = function (func, args) {
   const report = {
     name: func.name
   }
+  isNative
+    ? report.isNative = true
+    : null
 
   const consoleCatcher = evaluate.buildConsoleCatcher();
 
   let actual;
   let err;
-
-  const evaluator = new Function('console', 'args', 'return (' + func.toString() + ')(...args)');
-  try {
-    actual = evaluator(consoleCatcher, args);
-  } catch (error) {
-    err = error;
+  if (isNative) {
+    try {
+      actual = func(...args);
+    } catch (error) {
+      err = error;
+    }
+  } else {
+    // passing 'evaluate' as an arg allows meta-ing
+    const evaluator = new Function('console', 'args', 'evaluate', 'return (' + func.toString() + ')(...args)');
+    try {
+      actual = evaluator(consoleCatcher, args, evaluate);
+    } catch (error) {
+      err = error;
+    }
   }
 
   report.status = err
@@ -190,6 +227,7 @@ evaluate.assessImplementation = function (func, args) {
   return report;
 }
 
+
 // refactor to catch all console methods
 evaluate.buildConsoleCatcher = function () {
   const consoleInterceptor = Object.create(console);
@@ -215,6 +253,7 @@ evaluate.buildConsoleCatcher = function () {
 
 // views
 evaluate.renderLogs = function (log, isBehavior) {
+
   const mainColor = log.status === 0
     ? "red" // function errored out
     : log.status === 1
@@ -225,11 +264,16 @@ evaluate.renderLogs = function (log, isBehavior) {
           ? "orange" // function failed one or more asserts / test cases
           : "purple" // function had an invalid test case, status == 4
 
+
+  const nativity = log.isNative
+    ? ' (native)'
+    : ''
+
   const exerciseType = isBehavior
     ? 'behavior'
     : 'implementation'
 
-  console.groupCollapsed("%c" + log.name + ':', "color:" + mainColor, exerciseType);
+  console.groupCollapsed("%c" + log.name + nativity + ':', "color:" + mainColor, exerciseType);
   {
     isBehavior
       ? this.renderBehavior(log)
@@ -343,7 +387,7 @@ evaluate.renderImplementation = function (log) {
   }
 }
 
-evaluate.renderStudyLink = function (func, status, isBehavior) {
+evaluate.renderStudyLink = function (func, status, isBehavior, isNative) {
   const snippet = isBehavior
     ? func
     : commentTopBottom(func)
@@ -357,11 +401,16 @@ evaluate.renderStudyLink = function (func, status, isBehavior) {
     : "http://www.pythontutor.com/live.html#code=" + deTabbed + "&cumulative=false&curInstr=2&heapPrimitives=nevernest&mode=display&origin=opt-live.js&py=js&rawInputLstJSON=%5B%5D&textReferences=false";
 
   const a = document.createElement('a');
+
+  const nativity = isNative
+    ? ' (native)'
+    : ''
+
   const viztool = isBehavior
     ? 'Parsonizer'
     : 'JS Tutor'
 
-  a.innerHTML = '<strong>' + func.name + '</strong>:  <i>' + viztool + '</i>';
+  a.innerHTML = '<strong>' + func.name + nativity + '</strong>:  <i>' + viztool + '</i>';
 
   a.href = url;
   a.target = '_blank';
