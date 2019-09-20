@@ -354,17 +354,21 @@ const evaluate = (() => {
     {
       entry.err
         ? evaluate.renderError({ err: entry.err, name: func.name }, log.isNative)
-        : console.log("%cactual: ", 'font-weight: bold; color:' + caseColor, typeof entry.actual, entry.actual)
+        : console.log("%cactual: ", 'font-weight: bold; color:' + caseColor,
+          (typeof entry.actual).substring(0, 3) + ',', entry.actual)
 
-      console.log("%cexpected: ", 'font-weight: bold; color:blue', typeof entry.expected + ", " + entry.expected);
+      const expectedType = (typeof entry.expected).substring(0, 3);
+      console.log("%cexpected: ", 'font-weight: bold; color:blue', expectedType + ", " + entry.expected);
 
       if (entry.args.length === 1) {
-        console.log('%carg:', 'font-weight: bold; color:blue', typeof entry.args[0], entry.args[0]);
+        const argType = (typeof entry.args[0]).substring(0, 3);
+        console.log('%carg:', 'font-weight: bold; color:blue', argType + ',', entry.args[0]);
       } else {
         // const renderedArgs = entry.args.map(arg => [typeof arg, arg]);
         // console.log('%cargs: ', 'font-weight: bold; color:blue', renderedArgs);
         for (let i in entry.args) {
-          console.log('%carg ' + i + ': ', 'font-weight: bold; color:blue', typeof entry.args[i], entry.args[i]);
+          const argType = (typeof entry.args[i]).substring(0, 3);
+          console.log('%carg ' + i + ': ', 'font-weight: bold; color:blue', argType + ',', entry.args[i]);
         }
       }
     }
