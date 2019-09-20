@@ -21,6 +21,7 @@ const errorsCases = [
   { name: 'third', args: [0], expected: 1 },
 ];
 function errorsOut(x) {
+  console.log(x)
   if (x === "hi!") {
     console.log("errored")
     throw new Error("hello!");

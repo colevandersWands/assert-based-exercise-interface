@@ -1,11 +1,3 @@
-/*
-d elete from copy of testLog -> already done
-c lose whole thing -> done
-a rguments object compatibile -> done
-l og all console methods
-f reeze upon return -> done
-*/
-
 const evaluate = (() => {
   function evaluate(func, cases) {
 
@@ -26,7 +18,7 @@ const evaluate = (() => {
       ? evaluate.assessBehavior(func, cases, isNative)
       : evaluate.assessImplementation(func, isNative)
 
-    evaluate.renderLogs(evaluationLog, isBehavior);
+    evaluate.renderEvaluation(func, evaluationLog, isBehavior);
     evaluate.renderStudyLink(func, evaluationLog.status, isBehavior, isNative);
 
     return evaluationLog;
@@ -69,17 +61,15 @@ const evaluate = (() => {
 
     const testLogs = evaluate.assesTestCases(func, cases, isNative);
 
-    const behaviorStatus = !testLogs.every(entry => !entry.err)
+    report.status = !testLogs.every(entry => !entry.err)
       ? 0 // a test case threw an error
       : !testLogs.every(entry => entry.status !== 4)
         ? 4 // one or more test cases were invalid
-        : testLogs.every(entry => entry.pass)
-          && (testLogs.every(entry => entry.implementationLog.status === 1)
-            || testLogs.every(entry => entry.implementationLog.status === 2))
+        : testLogs.every(entry => entry.status === 2)
           ? 2 // all tests / asserts pass
           : 3 // one or more tests / asserts failed
 
-    report.status = behaviorStatus;
+
     report.testLogs = testLogs;
 
     return report;
@@ -101,9 +91,9 @@ const evaluate = (() => {
       Object.assign(behaviorLog, testCase);
 
       const implementationLog = evaluate.assessImplementation(func, isNative, testCase.args);
-      behaviorLog.implementationLog = implementationLog;
+      behaviorLog.implementation = implementationLog;
 
-      if (implementationLog.status === 0) {
+      if (implementationLog.err) {
         behaviorLog.err = implementationLog.err;
         behaviorLog.status = 0;
         testLogs.push(behaviorLog);
@@ -112,7 +102,7 @@ const evaluate = (() => {
         behaviorLog.actual = implementationLog.actual
       }
 
-      behaviorLog.pass = evaluate.compare(behaviorLog.actual, behaviorLog.expected);
+      behaviorLog.pass = evaluate.compareValues(behaviorLog.actual, behaviorLog.expected);
 
       behaviorLog.status = behaviorLog.pass
         && (implementationLog.status === 1
@@ -163,7 +153,7 @@ const evaluate = (() => {
 
   }
 
-  evaluate.compare = (actual, expected) => {
+  evaluate.compareValues = (actual, expected) => {
     let areTheSame;
     if (typeof expected === 'object' && expected !== null) {
       const _actual = JSON.stringify(actual);
@@ -177,7 +167,6 @@ const evaluate = (() => {
     return areTheSame;
   }
 
-  // implementational status is based on asserts or error
   evaluate.assessImplementation = (func, isNative, args) => {
 
     args = args instanceof Array
@@ -194,60 +183,59 @@ const evaluate = (() => {
 
     const evaluation = evaluate.evaluate(func, isNative, args);
 
-    report.status = evaluation.result instanceof Error
+    report.status = evaluation.err
       ? 0 // there was an error
-      : evaluation.caught.assert.length === 0
+      : evaluation.asserts.length === 0
         ? 1 // no error or asserts
-        : evaluation.caught.assert.every(entry => entry.assertion)
+        : evaluation.asserts.every(entry => entry.assertion)
           ? 2 // all asserts pass
           : 3 // at least one assert fails
 
-    // consoleCatcher.asserts.length !== 0
-    //   ? report.asserts = consoleCatcher.asserts
-    //   : null
-
-    // consoleCatcher.logs.length !== 0
-    //   ? report.logs = consoleCatcher.logs
-    //   : null
-
-    report.consoleCalls = evaluation.caught;
-
-    report.status === 0
-      ? report.err = evaluation.result
-      : undefined
-
-    report.status !== 0
-      ? report.actual = evaluation.result
+    evaluation.asserts.length > 0
+      ? report.asserts = evaluation.asserts
       : null
+
+    evaluation.err
+      ? report.err = evaluation.err
+      : report.actual = evaluation.actual
 
     return report;
   }
 
   evaluate.evaluate = (func, isNative, args) => {
-    const consoleCatcher = evaluate.buildConsoleCatcher();
+    const consoleCatcher = evaluate.buildConsoleCatcher()
 
-    let result;
+    const report = {
+      asserts: consoleCatcher.asserts
+    }
     if (isNative) {
       try {
-        result = func(...args);
+        report.actual = args instanceof Array
+          ? func(...args)
+          : func()
       } catch (error) {
-        result = error;
+        report.err = error;
+      }
+    } else if (func === evaluate) {
+      try {
+        report.actual = args instanceof Array
+          ? evaluate(...args)
+          : evaluate()
+      } catch (error) {
+        report.err = error;
       }
     } else {
-      // passing 'evaluate' as an arg allows meta-ing
-      const evaluatorWrapper = new Function('console', 'evaluate', 'return ' + func.toString());
-      const evaluator = evaluatorWrapper(consoleCatcher, evaluate);
+      const evaluatorWrapper = new Function('console', 'return ' + func.toString());
+      const evaluator = evaluatorWrapper(consoleCatcher);
       try {
-        result = evaluator(...args);
+        report.actual = args instanceof Array
+          ? evaluator(...args)
+          : evaluator()
       } catch (error) {
-        result = error;
+        report.err = error;
       }
     }
-
-    return {
-      result,
-      caught: consoleCatcher.caught
-    }
+    return report
   }
 
   // refactor to catch all console methods
@@ -255,12 +243,12 @@ const evaluate = (() => {
     const consoleInterceptor = Object.create(console);
     consoleInterceptor.caught = {};
 
-    consoleInterceptor.caught.assert = [];
+    consoleInterceptor.asserts = [];
     consoleInterceptor.assert = function (assertion) {
       const args = Array.from(arguments);
       args.shift();
-      consoleInterceptor.caught.assert.push({
-        assertion: Boolean(assertion),
+      consoleInterceptor.asserts.push({
+        assertion,
         messages: [...args]
       })
     }
@@ -269,28 +257,8 @@ const evaluate = (() => {
     consoleKeys.forEach(key => {
       if (key === 'assert' || (typeof console[key] !== 'function')) {
       }
-      else if (key === 'clear'
-        || key === 'groupCollapse'
-        || key === 'groupEnd'
-        || key === 'group') {
-        consoleInterceptor[key] = function () {
-          const args = Array.from(arguments);
-          console[key](func.name + ': ', ...args);
-          consoleInterceptor.caught = true;
-        }
-      }
-      else if (key === 'log'
-        || key === 'log'
-        || key === 'dir'
-        || key === 'dirxml'
-        || key === 'info'
-        || key === 'warn'
-        || key === 'table') {
-        consoleInterceptor.caught[key] = [];
-        consoleInterceptor[key] = function () {
-          const args = Array.from(arguments);
-          consoleInterceptor.caught[key].push(args);
-        }
+      else {
+        consoleInterceptor[key] = () => { };
       }
     });
 
@@ -298,7 +266,7 @@ const evaluate = (() => {
   }
 
   // views
-  evaluate.renderLogs = (log, isBehavior) => {
+  evaluate.renderEvaluation = (func, log, isBehavior) => {
 
     const mainColor = log.status === 0
       ? "red" // function errored out
@@ -321,28 +289,31 @@ const evaluate = (() => {
 
     console.groupCollapsed("%c" + log.name + nativity + ':', "color:" + mainColor, exerciseType);
     {
-
       !isBehavior && log.err
-        ? evaluate.renderError(log)
+        ? evaluate.renderError(log, log.isNative)
         : null
 
       isBehavior
-        ? evaluate.renderBehavior(log)
-        : evaluate.renderImplementation(log);
+        ? evaluate.renderBehavior(func, log)
+        : evaluate.renderImplementation(func, log);
     }
     console.groupEnd();
   }
 
-  evaluate.renderBehavior = (log) => {
+  evaluate.renderError = (log, isNative) => {
+    const newFunctionCorrection = isNative ? 0 : 2;
+    const err = log.err;
+    console.error('%c' + err.name + ': ' + err.message, 'color: red', '\n  ' + log.name + ' line ' + (err.lineNumber - newFunctionCorrection));
+  }
 
+  evaluate.renderBehavior = (func, log) => {
     if (log.empty) {
-      console.log('%cno test cases', 'color:purple');
-      return;
+      console.log('%cno test cases provided', 'color:purple');
+      return
     }
 
-    log.testLogs.forEach(entry => {
+    for (let entry of log.testLogs) {
 
-      // a behavioral test can't be black
       const testColor = entry.status === 0
         ? "red" // function errored out
         : entry.status === 2
@@ -362,18 +333,19 @@ const evaluate = (() => {
       } else {
         console.groupCollapsed('%c' + entry.name, 'color:' + testColor);
         {
-          evaluate.renderTestLog(entry)
-          evaluate.renderImplementation(entry.implementationLog);
+          evaluate.renderTestLog(func, entry, log)
+          evaluate.renderImplementation(func, entry.implementation, entry.args);
         }
         console.groupEnd();
       }
 
-    })
+    }
 
   }
 
 
-  evaluate.renderTestLog = (entry) => {
+
+  evaluate.renderTestLog = (func, entry, log) => {
 
     const caseColor = entry.pass
       ? 'green'
@@ -381,7 +353,7 @@ const evaluate = (() => {
 
     {
       entry.err
-        ? evaluate.renderError(entry)
+        ? evaluate.renderError({ err: entry.err, name: func.name }, log.isNative)
         : console.log("%cactual: ", 'font-weight: bold; color:' + caseColor, typeof entry.actual, entry.actual)
 
       console.log("%cexpected: ", 'font-weight: bold; color:blue', typeof entry.expected + ", " + entry.expected);
@@ -399,10 +371,8 @@ const evaluate = (() => {
 
   }
 
-
-  evaluate.renderImplementation = (log) => {
-
-    if (log.consoleCalls.asserts) {
+  evaluate.renderImplementation = (func, log, args) => {
+    if (log && log.asserts) {
       const assertsColor = log.asserts.every(entry => entry.assertion)
         ? "green" // function passed all of it's asserts / test cases
         : "orange"
@@ -420,24 +390,39 @@ const evaluate = (() => {
       }
       console.groupEnd();
     }
-    for (let key in log.consoleCalls) {
-      if (key === 'assert') {
-      }
-      else if (log.consoleCalls[key].length > 0) {
-        console.groupCollapsed(key + "s:");
-        {
-          log.consoleCalls[key].forEach(messages => console[key](...messages));
+
+    evaluate.renderConsoleOutput(func, log.isNative, args);
+
+  }
+
+  evaluate.renderConsoleOutput = (func, isNative, args) => {
+    console.groupCollapsed("console output:");
+    {
+      if (isNative) {
+        try {
+          args instanceof Array
+            ? func(...args)
+            : func()
+        } catch (err) {
+          console.log('%c-- error occurred in native code --', 'color:red');
         }
-        console.groupEnd();
       }
+      else if (func === evaluate) {
+        console.log('ô¿ô');
+      }
+      else {
+        try {
+          args instanceof Array
+            ? (new Function('args', '(' + func.toString() + ')\n(...args)'))(args)
+            : (new Function('(' + func.toString() + ')()'))()
+        } catch (err) {
+          console.log('%c-- error occurred on line ' + (err.lineNumber - 2) + ' --', 'color:red');
+        }
+      }
+
     }
-  }
-
-
-  evaluate.renderError = (log) => {
-    const err = log.err;
-    console.error('%c' + err.name + ': "' + err.message + '"', 'color: red', '\n  ' + log.name + ' line ' + (err.lineNumber - 3));
-  }
+    console.groupEnd();
+  };
 
   evaluate.renderStudyLink = (func, status, isBehavior, isNative) => {
     const snippet = isBehavior

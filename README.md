@@ -4,7 +4,17 @@ a function that turns the browser and devtools into a study environment for java
 
 play with the live examples [right here](https://janke-learning.github.io/study-function/) (it's not so interesting if you don't open your devtools' debugger)
 
-(no supprt for event loop exercises yet)
+
+```evaluate``` will run the target function twice:
+1. to build up the evaluation and know how to render the readout
+1. for the ```console output:``` tab, so logs appear in order un-interupted
+this is not a problem for exercises that use side-effect-less functions but will matter if multiple exercises in a row are accessing the same data.  if you're testing code that shares state, then this isn't the tool for you anyway.  you'll want a full testing framework for that
+
+if you can think of a way to correctly color the main report log _and_ have the console output collapsed in the group, PR!
+
+
+
+> no support for event loop exercises yet, coming soon
 
 ---
 
@@ -38,6 +48,7 @@ Color Codings:
 this function can also be used to evaluate native JS functions, it will label them with ```(native)```
 
 ---
+
 
 ### Meta-Evaluation
 

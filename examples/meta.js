@@ -7,16 +7,18 @@
   console.groupCollapsed(pageTitle);
 }
 
+evaluate()
+
 evaluate(evaluate);
 
-evaluate(evaluate, [{ name: "behavioring implementation", args: [function behaim() { console.assert(true) }], expected: "a full log object" }]);
+evaluate(evaluate, [{ name: "behavioring implementation", args: [function behaim() { console.assert(true) }], expected: "a full object" }]);
 
 const funcy = x => x;
 const funcyCases = [
   { name: "pass", args: [0], expected: 0 },
   { name: "fail", args: [0], expected: 1 },
 ];
-evaluate(evaluate, [{ name: "behavioring behavior", args: [funcy, funcyCases], expected: "a full log object" }]);
+evaluate(evaluate, [{ name: "behavioring behavior", args: [funcy, funcyCases], expected: "a full log" }]);
 
 {
   console.groupEnd();
