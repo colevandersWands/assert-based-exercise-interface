@@ -238,7 +238,6 @@ const evaluate = (() => {
     return report
   }
 
-  // refactor to catch all console methods
   evaluate.buildConsoleCatcher = () => {
     const consoleInterceptor = Object.create(console);
     consoleInterceptor.caught = {};
