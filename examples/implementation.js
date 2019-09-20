@@ -55,7 +55,7 @@ evaluate(example5_consoleLogs);
 function example6_noAsserts() {
   const msg = "no asserts? report is black!";
   console.log(msg);
-  const msg2 = "and logs are not collapsed";
+  const msg2 = "but logs are still collapsed";
   console.log(msg2);
 }
 evaluate(example6_noAsserts);
