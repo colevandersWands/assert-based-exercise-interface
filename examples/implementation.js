@@ -88,6 +88,11 @@ function example8_resultIs5failing() {
   for (let x = 0; x < 5; x++) {
     console.log(x);
     result = x;
+    console.count('is 5')
+    console.count('is 5 failing')
+    if (x === 3) {
+      console.countReset('is 5')
+    }
   }
   console.assert(result === 5, "result: ", typeof result, result);
 }

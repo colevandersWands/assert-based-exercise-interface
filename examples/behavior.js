@@ -75,6 +75,16 @@ function noFunc2(x) {
 evaluate(noFunc2, memeCases);
 
 
+const argumentsObjectCases = [
+  { name: 'numbers', args: [0, 1, 2], expected: undefined },
+  { name: 'letters', args: ['a', 'b', 'c'], expected: undefined },
+];
+function argumentsObject() {
+  console.log(...Array.from(arguments));
+}
+evaluate(argumentsObject, argumentsObjectCases);
+
+
 {
   console.groupEnd();
   document.body.appendChild(document.createElement('hr'));
