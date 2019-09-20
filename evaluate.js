@@ -187,7 +187,7 @@ const evaluate = (() => {
       ? 0 // there was an error
       : evaluation.asserts.length === 0
         ? 1 // no error or asserts
-        : evaluation.asserts.every(entry => entry.assertion)
+        : evaluation.asserts.every(entry => Boolean(entry.assertion))
           ? 2 // all asserts pass
           : 3 // at least one assert fails
 
@@ -383,9 +383,13 @@ const evaluate = (() => {
             ? "green"
             : "orange"
           const msg = entry.assertion
-            ? "PASS: "
-            : "FAIL: "
-          console.log('%c' + msg, 'color:' + color, ...entry.messages);
+            ? "PASS:"
+            : "FAIL:"
+
+          const assertion = entry.assertion,
+            assType = (typeof assertion).substring(0, 3),
+            messages = entry.messages;
+          console.log('%c' + msg, 'color:' + color, '( ' + assType + ',', assertion, '), ', ...messages);
         });
       }
       console.groupEnd();
