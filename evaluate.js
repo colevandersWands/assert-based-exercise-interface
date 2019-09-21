@@ -99,10 +99,10 @@ const evaluate = (() => {
         testLogs.push(behaviorLog);
         continue;
       } else {
-        behaviorLog.actual = implementationLog.actual
+        behaviorLog.returned = implementationLog.returned
       }
 
-      behaviorLog.pass = evaluate.compareValues(behaviorLog.actual, behaviorLog.expected);
+      behaviorLog.pass = evaluate.compareValues(behaviorLog.returned, behaviorLog.expected);
 
       behaviorLog.status = behaviorLog.pass
         && (implementationLog.status === 1
@@ -153,16 +153,16 @@ const evaluate = (() => {
 
   }
 
-  evaluate.compareValues = (actual, expected) => {
+  evaluate.compareValues = (returned, expected) => {
     let areTheSame;
     if (typeof expected === 'object' && expected !== null) {
-      const _actual = JSON.stringify(actual);
+      const _returned = JSON.stringify(returned);
       const _expected = JSON.stringify(expected);
-      areTheSame = _actual === _expected;
+      areTheSame = _returned === _expected;
     } else if (expected !== expected) {
-      areTheSame = actual !== actual;
+      areTheSame = returned !== returned;
     } else {
-      areTheSame = actual === expected;
+      areTheSame = returned === expected;
     }
     return areTheSame;
   }
@@ -197,7 +197,7 @@ const evaluate = (() => {
 
     evaluation.err
       ? report.err = evaluation.err
-      : report.actual = evaluation.actual
+      : report.returned = evaluation.returned
 
     return report;
   }
@@ -210,7 +210,7 @@ const evaluate = (() => {
     }
     if (isNative) {
       try {
-        report.actual = args instanceof Array
+        report.returned = args instanceof Array
           ? func(...args)
           : func()
       } catch (error) {
@@ -218,7 +218,7 @@ const evaluate = (() => {
       }
     } else if (func === evaluate) {
       try {
-        report.actual = args instanceof Array
+        report.returned = args instanceof Array
           ? evaluate(...args)
           : evaluate()
       } catch (error) {
@@ -228,7 +228,7 @@ const evaluate = (() => {
       const evaluatorWrapper = new Function('console', 'return ' + func.toString());
       const evaluator = evaluatorWrapper(consoleCatcher);
       try {
-        report.actual = args instanceof Array
+        report.returned = args instanceof Array
           ? evaluator(...args)
           : evaluator()
       } catch (error) {
@@ -354,8 +354,8 @@ const evaluate = (() => {
     {
       entry.err
         ? evaluate.renderError({ err: entry.err, name: func.name }, log.isNative)
-        : console.log("%cactual: ", 'font-weight: bold; color:' + caseColor,
-          (typeof entry.actual).substring(0, 3) + ',', entry.actual)
+        : console.log("%creturned: ", 'font-weight: bold; color:' + caseColor,
+          (typeof entry.returned).substring(0, 3) + ',', entry.returned)
 
       const expectedType = (typeof entry.expected).substring(0, 3);
       console.log("%cexpected: ", 'font-weight: bold; color:blue', expectedType + ", " + entry.expected);
