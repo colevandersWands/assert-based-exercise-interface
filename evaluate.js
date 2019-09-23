@@ -336,13 +336,7 @@ const evaluate = (() => {
 
 
 
-  evaluate.renderTestLog = (func, entry, log) => {
-    // console.log(entry)
-    // console.log(log)
-    const caseColor = entry.pass
-      ? 'green'
-      : 'orange'
-
+  evaluate.renderTestLog = (func, entry) => {
 
     if (entry.args.length === 1) {
       const argType = (typeof entry.args[0]).substring(0, 3);
@@ -384,8 +378,8 @@ const evaluate = (() => {
             ? "green"
             : "orange"
           const msg = entry.assertion
-            ? "PASS:"
-            : "FAIL:"
+            ? "truthy:"
+            : "falsey:"
 
           const assertion = entry.assertion,
             assType = (typeof assertion).substring(0, 3),
@@ -434,9 +428,6 @@ const evaluate = (() => {
       ? func
       : commentTopBottom(func)
 
-
-    // const leadingWhiteSpaceGone = snippet.replace(/^ +/, '');
-    // it's a bigger issue than this, needs beautify
     const encoded = encodeURIComponent(snippet);
     const sanitized = encoded.replace(/\(/g, '%28').replace(/\)/g, '%29');
     const deTabbed = sanitized.replace(/%09/g, '%20%20');
