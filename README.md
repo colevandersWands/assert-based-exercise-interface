@@ -6,9 +6,9 @@ play with the live examples [right here](https://janke-learning.github.io/study-
 
 
 ```evaluate``` will run the target function twice:
-1. to build up the evaluation and know how to render the readout
-1. for the ```console output:``` tab, so logs appear in order un-interupted
-this is not a problem for exercises that use side-effect-less functions but will matter if multiple exercises in a row are accessing the same data.  if you're testing code that shares state, then this isn't the tool for you anyway.  you'll want a full testing framework for that
+1. to build up the evaluation and know how to render the readout. you can't change the color of a log after it's printed, so you need to know before.  which means you need to have run the code before logging to know what color to log.
+1. for the ```console output:``` tab, so logs appear in order un-interupted in sequence (args -> console output -> assert evaluation -> return value / error -> expected value).  this is not a problem for exercises that use side-effect-less functions but will matter if multiple exercises in a row are accessing the same data.  if you're testing code that shares state, then this isn't the tool for you anyway.  you'll want a full testing framework for that
+1. this could result in some different errors happening on on the second running which would mess with debugging and be unhelpful to students, but as long as the functions are kept pure that shouldn't be a problem
 
 if you can think of a way to correctly color the main report log _and_ have the console output collapsed in the group, PR!
 
