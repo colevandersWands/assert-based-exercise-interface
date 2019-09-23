@@ -297,7 +297,10 @@ const evaluate = (() => {
     const err = arg instanceof Error
       ? arg
       : arg.err
-    console.error('%c' + err.name + ': ' + err.message + ' (line ' + err.lineNumber + ')', 'color: red');
+
+    // const fileName = err.fileName.substr(err.fileName.lastIndexOf('/') + 1)
+    // console.error(`%c${err.name}: ${err.message}\n(${fileName} line ${err.lineNumber})`, 'color: red');
+    console.error(`%c${err.name}: ${err.message}`, 'color: red');
   }
 
   evaluate.renderBehavior = (func, log) => {
@@ -418,6 +421,8 @@ const evaluate = (() => {
             : func()
         } catch (err) {
           // evaluate.renderError(err)
+          const fileName = err.fileName.substr(err.fileName.lastIndexOf('/') + 1)
+          console.log(`%cerror: ${fileName} line ${err.lineNumber}`, 'color: red');
         }
       }
 
