@@ -295,7 +295,8 @@ const evaluate = (() => {
 
   evaluate.renderError = (log) => {
     const err = log.err;
-    console.error('%c' + err.name + ': ' + err.message, 'color: red', '\n  ' + log.name + ' line ' + (err.lineNumber));
+    console.error('%c' + err.name + ': ' + err.message, 'color: red');
+    // console.error('%c' + err.name + ': ' + err.message, 'color: red', '\n  ' + log.name + ' line ' + (err.lineNumber));
   }
 
   evaluate.renderBehavior = (func, log) => {
