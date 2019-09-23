@@ -352,14 +352,6 @@ const evaluate = (() => {
       : 'orange'
 
     {
-      entry.err
-        ? evaluate.renderError({ err: entry.err, name: func.name }, log.isNative)
-        : console.log("%creturned: ", 'font-weight: bold; color:' + caseColor,
-          (typeof entry.returned).substring(0, 3) + ',', entry.returned)
-
-      const expectedType = (typeof entry.expected).substring(0, 3);
-      console.log("%cexpected: ", 'font-weight: bold; color:blue', expectedType + ", " + entry.expected);
-
       if (entry.args.length === 1) {
         const argType = (typeof entry.args[0]).substring(0, 3);
         console.log('%carg:', 'font-weight: bold; color:blue', argType + ',', entry.args[0]);
@@ -371,6 +363,15 @@ const evaluate = (() => {
           console.log('%carg ' + i + ': ', 'font-weight: bold; color:blue', argType + ',', entry.args[i]);
         }
       }
+
+      const expectedType = (typeof entry.expected).substring(0, 3);
+      console.log("%cexpected: ", 'font-weight: bold; color:blue', expectedType + ", " + entry.expected);
+
+      entry.err
+        ? evaluate.renderError({ err: entry.err, name: func.name }, log.isNative)
+        : console.log("%creturned: ", 'font-weight: bold; color:' + caseColor,
+          (typeof entry.returned).substring(0, 3) + ',', entry.returned)
+
     }
 
   }
