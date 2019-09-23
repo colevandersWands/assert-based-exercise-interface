@@ -293,10 +293,11 @@ const evaluate = (() => {
     console.groupEnd();
   }
 
-  evaluate.renderError = (log) => {
-    const err = log.err;
-    console.error('%c' + err.name + ': ' + err.message, 'color: red');
-    // console.error('%c' + err.name + ': ' + err.message, 'color: red', '\n  ' + log.name + ' line ' + (err.lineNumber));
+  evaluate.renderError = (arg) => {
+    const err = arg instanceof Error
+      ? arg
+      : arg.err
+    console.error('%c' + err.name + ': ' + err.message + ' (line ' + err.lineNumber + ')', 'color: red');
   }
 
   evaluate.renderBehavior = (func, log) => {
@@ -416,7 +417,7 @@ const evaluate = (() => {
             ? func(...args)
             : func()
         } catch (err) {
-          console.log('%c-- error occurred on line ' + (err.lineNumber) + ' --', 'color:red');
+          // evaluate.renderError(err)
         }
       }
 
