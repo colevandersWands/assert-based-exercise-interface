@@ -444,16 +444,20 @@ const evaluate = (() => {
       console.groupEnd();
     }
 
-    log.err
-      ? evaluate.renderError({ err: log.err, name: func.name }, log.isNative)
-      : log.pass === undefined // not a test case rendering
-        ? console.log("%creturned: ", 'font-weight: bold; color:' + 'black',
-          (typeof log.returned).substring(0, 3) + ',', log.returned)
-        : log.pass
-          ? console.log("%creturned: ", 'font-weight: bold; color:' + 'green',
-            (typeof log.returned).substring(0, 3) + ',', log.returned)
-          : console.log("%creturned: ", 'font-weight: bold; color:' + 'orange',
-            (typeof log.returned).substring(0, 3) + ',', log.returned)
+    const returnedColor = log.pass === undefined // not a test case rendering
+      ? 'black'
+      : log.pass
+        ? 'green'
+        : 'orange'
+
+    if (log.err) {
+      evaluate.renderError({ err: log.err, name: func.name }, log.isNative)
+    } else if (func.quizzing && log.pass === false) {
+      console.log("%creturned: ", 'font-weight: bold; color:' + returnedColor, '--hidden--')
+    } else {
+      console.log("%creturned: ", 'font-weight: bold; color:' + returnedColor,
+        (typeof log.returned).substring(0, 3) + ',', log.returned)
+    }
 
   }
 
