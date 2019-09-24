@@ -169,8 +169,8 @@ const evaluate = (() => {
     return areTheSame;
   }
 
-  // https://gomakethings.com/check-if-two-arrays-or-objects-are-equal-with-javascript/
   evaluate.isEqualObjects = (value, other) => {
+    // https://gomakethings.com/check-if-two-arrays-or-objects-are-equal-with-javascript/
 
     var type = Object.prototype.toString.call(value);
 
@@ -187,7 +187,7 @@ const evaluate = (() => {
       var itemType = Object.prototype.toString.call(item1);
 
       if (['[object Array]', '[object Object]'].indexOf(itemType) >= 0) {
-        if (!isEqual(item1, item2)) return false;
+        if (!evaluate.isEqualObjects(item1, item2)) return false;
       }
       else {
         if (itemType !== Object.prototype.toString.call(item2)) return false;
