@@ -195,6 +195,7 @@ const evaluate = (() => {
         if (itemType === '[object Function]') {
           if (item1.toString() !== item2.toString()) return false;
         } else {
+          if (item1 !== item1 && item2 !== item2) return true;
           if (item1 !== item2) return false;
         }
       }
