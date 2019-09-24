@@ -21,7 +21,9 @@ const evaluate = (() => {
       : evaluate.assessImplementation(func, isNative)
 
     evaluate.renderEvaluation(func, evaluationLog, isBehavior);
-    evaluate.renderStudyLink(func, evaluationLog.status, isBehavior, isNative);
+    isNative
+      ? evaluate.renderDuckDuckSearch(func, evaluationLog.status)
+      : evaluate.renderStudyLink(func, evaluationLog.status, isBehavior);
 
     return evaluationLog;
 
@@ -429,6 +431,31 @@ const evaluate = (() => {
     }
     console.groupEnd();
   };
+
+  evaluate.renderDuckDuckSearch = (func, status) => {
+
+    const url = `https://duckduckgo.com/?q=javascript+mdn+${func.name}&atb=v185-2_d&ia=web`;
+
+    const a = document.createElement('a');
+
+    a.innerHTML = '<strong>' + func.name + ' (native)</strong>:  <i>DuckDuck Search</i > ';
+
+    a.href = url;
+    a.target = '_blank';
+    a.style.color = status === 0
+      ? "red"
+      : status === 1
+        ? "black"
+        : status === 2
+          ? "green"
+          : status === 3
+            ? "orange"
+            : "purple"
+
+    document.body.appendChild(a);
+    document.body.appendChild(document.createElement("hr"));
+
+  }
 
   evaluate.renderStudyLink = (func, status, isBehavior, isNative) => {
     const snippet = isBehavior
