@@ -422,7 +422,7 @@ const evaluate = (() => {
         } catch (err) {
           // evaluate.renderError(err)
           const fileName = err.fileName.substr(err.fileName.lastIndexOf('/') + 1)
-          console.log(`%cerror: ${fileName} line ${err.lineNumber}`, 'color: red');
+          console.log(`%c(error at ${fileName} line ${err.lineNumber})`, 'color: red');
         }
       }
 
