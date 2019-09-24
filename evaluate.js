@@ -360,7 +360,7 @@ const evaluate = (() => {
     evaluate.renderImplementation(func, entry);
 
     const expectedType = (typeof entry.expected).substring(0, 3);
-    console.log("%cexpected: ", 'font-weight: bold; color:blue', expectedType + ", " + entry.expected);
+    console.log("%cexpected: ", 'font-weight: bold; color:blue', expectedType + ",", entry.expected);
 
   }
 
