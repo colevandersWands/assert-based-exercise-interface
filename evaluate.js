@@ -20,12 +20,15 @@ const evaluate = (() => {
       ? evaluate.assessBehavior(func, cases, isNative)
       : evaluate.assessImplementation(func, isNative)
 
+    evaluationLog.isBehavior = isBehavior;
+    evaluationLog.isNative = isNative;
     evaluationLog.coordinates = evaluate.fileLineColumn();
 
-    evaluate.renderEvaluation(func, evaluationLog, isBehavior);
     isNative
       ? evaluate.renderDuckDuckSearch(func, evaluationLog)
       : evaluate.renderStudyLink(func, evaluationLog, isBehavior);
+
+    evaluate.renderEvaluation(func, evaluationLog, isBehavior);
 
     return evaluationLog;
 
@@ -517,15 +520,16 @@ const evaluate = (() => {
 
     document.body.appendChild(a);
 
-    log.status === 0
-      ? document.body.appendChild(evaluate.renderErrorSearch(log.err))
-      : null
+    // log.status === 0
+    //   ? document.body.appendChild(evaluate.renderErrorSearch(log.err))
+    //   : null
 
     document.body.appendChild(document.createElement("hr"));
 
   }
 
   evaluate.renderStudyLink = (func, log, isBehavior, isNative) => {
+
     const snippet = isBehavior
       ? func
       : commentTopBottom(func)
@@ -564,9 +568,17 @@ const evaluate = (() => {
 
     document.body.appendChild(a);
 
-    log.status === 0
-      ? document.body.appendChild(evaluate.renderErrorSearch(log.err))
-      : null
+    if (log.isBehavior && log.testLogs) {
+      for (let entry of log.testLogs) {
+        if (entry.err) {
+          evaluate.renderErrorSearch(entry.name, entry.err);
+        }
+      }
+    } else {
+      if (log.err) {
+        evaluate.renderErrorSearch(null, log.err);
+      }
+    }
 
     document.body.appendChild(document.createElement("hr"));
 
@@ -580,12 +592,16 @@ const evaluate = (() => {
 
   }
 
-  evaluate.renderErrorSearch = (err) => {
+  evaluate.renderErrorSearch = (name, err) => {
     const url = `https://duckduckgo.com/?q=javascript+mdn+${err.name}+${err.message}&atb=v185-2_d&ia=web`;
 
     const a = document.createElement('a');
 
-    a.innerHTML = '<strong>' + err.name + '</strong>: <i>DuckDuck Search</i>';
+    name
+      ? a.innerHTML = '(' + name + ') '
+      : null
+
+    a.innerHTML += '<strong>' + err.name + '</strong>: <i>DuckDuck Search</i>';
 
     a.href = url;
     a.target = '_blank';
@@ -594,7 +610,9 @@ const evaluate = (() => {
     const div = document.createElement('div');
     div.appendChild(a);
     div.style.marginTop = '5px';
-    return div;
+
+    // return div;
+    document.body.appendChild(div);
   }
 
   return Object.freeze(evaluate);

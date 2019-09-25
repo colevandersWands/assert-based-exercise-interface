@@ -19,12 +19,16 @@ const errorsCases = [
   { name: 'first', args: [0], expected: 0 },
   { name: 'second', args: ["hi!"], expected: "hi!" },
   { name: 'third', args: [0], expected: 1 },
+  { name: 'fourth', args: ["hi"], expected: "no" },
 ];
 function errorsOut(x) {
   console.log(x)
   if (x === "hi!") {
     console.log("errored")
     throw new Error("hello!");
+  }
+  else if (x === 'hi') {
+    throw new TypeError("strings don't exist");
   }
   console.assert(true, "no error")
   return x;
