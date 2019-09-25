@@ -20,6 +20,8 @@ const evaluate = (() => {
       ? evaluate.assessBehavior(func, cases, isNative)
       : evaluate.assessImplementation(func, isNative)
 
+    evaluationLog.coordinates = evaluate.fileLineColumn();
+
     evaluate.renderEvaluation(func, evaluationLog, isBehavior);
     isNative
       ? evaluate.renderDuckDuckSearch(func, evaluationLog.status)
@@ -27,6 +29,21 @@ const evaluate = (() => {
 
     return evaluationLog;
 
+  }
+
+  evaluate.fileLineColumn = (stackDepth, pathDepth) => {
+    // https://stackoverflow.com/questions/25331030/js-get-second-to-last-index-of
+
+    const stackString = (new Error()).stack;
+    const stackArray = stackString.split('\n');
+    const baseCallPath = stackArray[stackArray.length - 2];
+    const baseCallLastSlash = baseCallPath.lastIndexOf('/') - 1
+    const baseCallPenultimateSlash = baseCallPath.lastIndexOf('/', baseCallLastSlash);
+    const baseCallLocation = baseCallPath.substr(baseCallPenultimateSlash);
+    // const baseCallLocation = baseCallPath.substr(baseCallLastSlash);
+    return baseCallLocation;
+
+    // eventually maybe configure return value with args
   }
 
 
@@ -335,6 +352,8 @@ const evaluate = (() => {
 
     console.groupCollapsed("%c" + log.name + nativity + ':', "color:" + mainColor, exerciseType);
     {
+      console.log('%cevaluated @ ' + log.coordinates, 'color:grey');
+
       isBehavior
         ? evaluate.renderBehavior(func, log)
         : evaluate.renderImplementation(func, log);
@@ -396,7 +415,6 @@ const evaluate = (() => {
       const argType = (typeof entry.args[i]).substring(0, 3);
       console.log('%cargs[' + i + ']: ', 'font-weight: bold; color:blue', argType + ',', entry.args[i]);
     }
-
 
     evaluate.renderImplementation(func, entry);
 
