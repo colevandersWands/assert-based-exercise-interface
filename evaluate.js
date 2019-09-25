@@ -462,7 +462,8 @@ const evaluate = (() => {
         : 'orange'
 
     if (log.err) {
-      evaluate.renderError({ err: log.err, name: func.name }, log.isNative)
+      console.log(`%c${log.err.name}:`, 'font-weight: bold; color: red', log.err.message);
+      // evaluate.renderError({ err: log.err, name: func.name }, log.isNative)
     } else if (func.quizzing && log.pass === false) {
       console.log("%creturned: ", 'font-weight: bold; color:' + returnedColor, '--hidden--')
     } else {
@@ -484,9 +485,7 @@ const evaluate = (() => {
             ? func(...args)
             : func()
         } catch (err) {
-          // evaluate.renderError(err)
-          const fileName = err.fileName.substr(err.fileName.lastIndexOf('/') + 1)
-          console.log(`%c(error @ ${fileName} line ${err.lineNumber})`, 'color: red');
+          console.log(err);
         }
       }
 
