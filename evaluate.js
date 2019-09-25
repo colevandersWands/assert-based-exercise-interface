@@ -392,17 +392,11 @@ const evaluate = (() => {
 
   evaluate.renderTestLog = (func, entry) => {
 
-    if (entry.args.length === 1) {
-      const argType = (typeof entry.args[0]).substring(0, 3);
-      console.log('%carg:', 'font-weight: bold; color:blue', argType + ',', entry.args[0]);
-    } else {
-      // const renderedArgs = entry.args.map(arg => [typeof arg, arg]);
-      // console.log('%cargs: ', 'font-weight: bold; color:blue', renderedArgs);
-      for (let i in entry.args) {
-        const argType = (typeof entry.args[i]).substring(0, 3);
-        console.log('%carg ' + i + ': ', 'font-weight: bold; color:blue', argType + ',', entry.args[i]);
-      }
+    for (let i in entry.args) {
+      const argType = (typeof entry.args[i]).substring(0, 3);
+      console.log('%cargs[' + i + ']: ', 'font-weight: bold; color:blue', argType + ',', entry.args[i]);
     }
+
 
     evaluate.renderImplementation(func, entry);
 
