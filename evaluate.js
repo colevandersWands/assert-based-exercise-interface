@@ -24,14 +24,10 @@ const evaluate = (() => {
     evaluationLog.isNative = isNative;
     evaluationLog.coordinates = evaluate.fileLineColumn();
 
-    isNative
-      ? evaluate.renderDuckDuckSearch(func, evaluationLog)
-      : evaluate.renderStudyLink(func, evaluationLog, isBehavior);
-
+    evaluate.renderStudyLinks(func, evaluationLog)
     evaluate.renderEvaluation(func, evaluationLog, isBehavior);
 
     return evaluationLog;
-
   }
 
   evaluate.fileLineColumn = (stackDepth, pathDepth) => {
@@ -498,7 +494,34 @@ const evaluate = (() => {
     console.groupEnd();
   };
 
-  evaluate.renderDuckDuckSearch = (func, log) => {
+  evaluate.renderStudyLinks = (func, log) => {
+
+    const a = log.isNative
+      ? evaluate.duckDuckSearchComponent(func, log)
+      : evaluate.studyLinkComponent(func, log);
+
+    document.body.appendChild(a);
+
+    if (log.isBehavior && log.testLogs) {
+      for (let entry of log.testLogs) {
+        if (entry.err) {
+          document.body.appendChild(
+            evaluate.errorSearchComponent(entry.name, entry.err)
+          )
+        }
+      }
+    } else {
+      if (log.err) {
+        document.body.appendChild(
+          evaluate.errorSearchComponent(null, log.err)
+        )
+      }
+    }
+
+    document.body.appendChild(document.createElement("hr"));
+  }
+
+  evaluate.duckDuckSearchComponent = (func, log) => {
 
     const url = `https://duckduckgo.com/?q=javascript+mdn+${func.name}&atb=v185-2_d&ia=web`;
 
@@ -518,37 +541,31 @@ const evaluate = (() => {
             ? "orange"
             : "purple"
 
-    document.body.appendChild(a);
-
-    // log.status === 0
-    //   ? document.body.appendChild(evaluate.renderErrorSearch(log.err))
-    //   : null
-
-    document.body.appendChild(document.createElement("hr"));
+    return a;
 
   }
 
-  evaluate.renderStudyLink = (func, log, isBehavior, isNative) => {
+  evaluate.studyLinkComponent = (func, log) => {
 
-    const snippet = isBehavior
+    const snippet = log.isBehavior
       ? func
-      : commentTopBottom(func)
+      : evaluate.commentTopBottom(func)
 
     const encoded = encodeURIComponent(snippet);
     const sanitized = encoded.replace(/\(/g, '%28').replace(/\)/g, '%29');
     const deTabbed = sanitized.replace(/%09/g, '%20%20');
 
-    const url = isBehavior
+    const url = log.isBehavior
       ? "http://janke-learning.github.io/parsonizer/?snippet=" + deTabbed
       : "http://www.pythontutor.com/live.html#code=" + deTabbed + "&cumulative=false&curInstr=2&heapPrimitives=nevernest&mode=display&origin=opt-live.js&py=js&rawInputLstJSON=%5B%5D&textReferences=false";
 
     const a = document.createElement('a');
 
-    const nativity = isNative
+    const nativity = log.isNative
       ? ' (native)'
       : ''
 
-    const viztool = isBehavior
+    const viztool = log.isBehavior
       ? 'Parsonizer'
       : 'JS Tutor'
 
@@ -566,33 +583,19 @@ const evaluate = (() => {
             ? "orange"
             : "purple"
 
-    document.body.appendChild(a);
-
-    if (log.isBehavior && log.testLogs) {
-      for (let entry of log.testLogs) {
-        if (entry.err) {
-          evaluate.renderErrorSearch(entry.name, entry.err);
-        }
-      }
-    } else {
-      if (log.err) {
-        evaluate.renderErrorSearch(null, log.err);
-      }
-    }
-
-    document.body.appendChild(document.createElement("hr"));
-
-    function commentTopBottom(func) {
-      const funcString = func.toString();
-      const linesArray = funcString.split("\n");
-      linesArray[0] = '// ' + linesArray[0];
-      linesArray[linesArray.length - 1] = '// ' + linesArray[linesArray.length - 1];
-      return linesArray.join("\n");
-    }
+    return a
 
   }
 
-  evaluate.renderErrorSearch = (name, err) => {
+  evaluate.commentTopBottom = (func) => {
+    const funcString = func.toString();
+    const linesArray = funcString.split("\n");
+    linesArray[0] = '// ' + linesArray[0];
+    linesArray[linesArray.length - 1] = '// ' + linesArray[linesArray.length - 1];
+    return linesArray.join("\n");
+  }
+
+  evaluate.errorSearchComponent = (name, err) => {
     const url = `https://duckduckgo.com/?q=javascript+mdn+${err.name}+${err.message}&atb=v185-2_d&ia=web`;
 
     const a = document.createElement('a');
@@ -611,8 +614,7 @@ const evaluate = (() => {
     div.appendChild(a);
     div.style.marginTop = '5px';
 
-    // return div;
-    document.body.appendChild(div);
+    return div;
   }
 
   return Object.freeze(evaluate);
