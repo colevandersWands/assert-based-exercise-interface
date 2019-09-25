@@ -24,8 +24,8 @@ const evaluate = (() => {
 
     evaluate.renderEvaluation(func, evaluationLog, isBehavior);
     isNative
-      ? evaluate.renderDuckDuckSearch(func, evaluationLog.status)
-      : evaluate.renderStudyLink(func, evaluationLog.status, isBehavior);
+      ? evaluate.renderDuckDuckSearch(func, evaluationLog)
+      : evaluate.renderStudyLink(func, evaluationLog, isBehavior);
 
     return evaluationLog;
 
@@ -487,7 +487,7 @@ const evaluate = (() => {
         } catch (err) {
           // evaluate.renderError(err)
           const fileName = err.fileName.substr(err.fileName.lastIndexOf('/') + 1)
-          console.log(`%c(error at ${fileName} line ${err.lineNumber})`, 'color: red');
+          console.log(`%c(error @ ${fileName} line ${err.lineNumber})`, 'color: red');
         }
       }
 
@@ -495,7 +495,7 @@ const evaluate = (() => {
     console.groupEnd();
   };
 
-  evaluate.renderDuckDuckSearch = (func, status) => {
+  evaluate.renderDuckDuckSearch = (func, log) => {
 
     const url = `https://duckduckgo.com/?q=javascript+mdn+${func.name}&atb=v185-2_d&ia=web`;
 
@@ -505,22 +505,27 @@ const evaluate = (() => {
 
     a.href = url;
     a.target = '_blank';
-    a.style.color = status === 0
+    a.style.color = log.status === 0
       ? "red"
-      : status === 1
+      : log.status === 1
         ? "black"
-        : status === 2
+        : log.status === 2
           ? "green"
-          : status === 3
+          : log.status === 3
             ? "orange"
             : "purple"
 
     document.body.appendChild(a);
+
+    log.status === 0
+      ? document.body.appendChild(evaluate.renderErrorSearch(log.err))
+      : null
+
     document.body.appendChild(document.createElement("hr"));
 
   }
 
-  evaluate.renderStudyLink = (func, status, isBehavior, isNative) => {
+  evaluate.renderStudyLink = (func, log, isBehavior, isNative) => {
     const snippet = isBehavior
       ? func
       : commentTopBottom(func)
@@ -547,17 +552,22 @@ const evaluate = (() => {
 
     a.href = url;
     a.target = '_blank';
-    a.style.color = status === 0
+    a.style.color = log.status === 0
       ? "red"
-      : status === 1
+      : log.status === 1
         ? "black"
-        : status === 2
+        : log.status === 2
           ? "green"
-          : status === 3
+          : log.status === 3
             ? "orange"
             : "purple"
 
     document.body.appendChild(a);
+
+    log.status === 0
+      ? document.body.appendChild(evaluate.renderErrorSearch(log.err))
+      : null
+
     document.body.appendChild(document.createElement("hr"));
 
     function commentTopBottom(func) {
@@ -568,6 +578,23 @@ const evaluate = (() => {
       return linesArray.join("\n");
     }
 
+  }
+
+  evaluate.renderErrorSearch = (err) => {
+    const url = `https://duckduckgo.com/?q=javascript+mdn+${err.name}+${err.message}&atb=v185-2_d&ia=web`;
+
+    const a = document.createElement('a');
+
+    a.innerHTML = '<strong>' + err.name + '</strong>: <i>DuckDuck Search</i>';
+
+    a.href = url;
+    a.target = '_blank';
+    a.style.color = 'red';
+
+    const div = document.createElement('div');
+    div.appendChild(a);
+    div.style.marginTop = '5px';
+    return div;
   }
 
   return Object.freeze(evaluate);
