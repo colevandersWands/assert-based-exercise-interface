@@ -387,7 +387,8 @@ const evaluate = (() => {
             : "purple" // function had an invalid test case, status == 4
 
       if (entry.status === 4) {
-        console.groupCollapsed('%cinvalid test case', 'color:' + testColor);
+        const invalidIndex = log.testLogs.indexOf(entry);
+        console.groupCollapsed('%c[' + invalidIndex + '] is invalid', 'color:' + testColor);
         {
           const toRender = Object.assign({}, entry);
           delete toRender.status;
