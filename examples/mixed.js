@@ -22,7 +22,6 @@ const mixedCases = [
   { name: 'second', args: [0], expected: 0 },
   { name: 'third', args: [0], expected: 0 },
 ];
-
 function passTestsPassAsserts(x) {
   console.assert(x === 0, "assert");
   console.log("asdfs")

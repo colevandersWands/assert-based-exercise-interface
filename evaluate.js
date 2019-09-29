@@ -24,8 +24,11 @@ const evaluate = (() => {
     evaluationLog.isNative = isNative;
     evaluationLog.coordinates = evaluate.fileLineColumn();
 
-    evaluate.renderStudyLinks(func, evaluationLog)
     evaluate.renderEvaluation(func, evaluationLog, isBehavior);
+
+    document.body !== null
+      ? evaluate.renderStudyLinks(func, evaluationLog)
+      : null
 
     return evaluationLog;
   }
