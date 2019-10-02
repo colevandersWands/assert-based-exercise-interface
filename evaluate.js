@@ -26,26 +26,21 @@ const evaluate = (() => {
 
     evaluate.renderEvaluation(func, evaluationLog, isBehavior);
 
-    document.body !== null
+    document && document.body !== null
       ? evaluate.renderStudyLinks(func, evaluationLog)
       : null
 
     return evaluationLog;
   }
 
-  evaluate.fileLineColumn = (stackDepth, pathDepth) => {
-    // https://stackoverflow.com/questions/25331030/js-get-second-to-last-index-of
-
+  evaluate.fileLineColumn = () => {
     const stackString = (new Error()).stack;
     const stackArray = stackString.split('\n');
-    const baseCallPath = stackArray[stackArray.length - 2];
-    const baseCallLastSlash = baseCallPath.lastIndexOf('/') - 1
-    const baseCallPenultimateSlash = baseCallPath.lastIndexOf('/', baseCallLastSlash);
-    const baseCallLocation = baseCallPath.substr(baseCallPenultimateSlash);
-    // const baseCallLocation = baseCallPath.substr(baseCallLastSlash);
-    return baseCallLocation;
+    const baseCallPath = stackArray[stackArray.length - 1] === ''
+      ? stackArray[stackArray.length - 2] // firefox
+      : stackArray[stackArray.length - 1] // chrome, opera
 
-    // eventually maybe configure return value with args
+    return baseCallPath;
   }
 
 
@@ -355,7 +350,7 @@ const evaluate = (() => {
 
     console.groupCollapsed("%c" + log.name + nativity + ':', "color:" + mainColor, exerciseType);
     {
-      console.log('%cevaluated @ ' + log.coordinates, 'color:grey');
+      evaluate.renderCoordinates(log);
 
       isBehavior
         ? evaluate.renderBehavior(func, log)
@@ -364,15 +359,18 @@ const evaluate = (() => {
     console.groupEnd();
   }
 
-  evaluate.renderError = (arg) => {
-    const err = arg instanceof Error
-      ? arg
-      : arg.err
+  evaluate.renderCoordinates = (log) => {
+    // https://stackoverflow.com/questions/25331030/js-get-second-to-last-index-of
 
-    // const fileName = err.fileName.substr(err.fileName.lastIndexOf('/') + 1)
-    // console.error(`%c${err.name}: ${err.message}\n(${fileName} line ${err.lineNumber})`, 'color: red');
-    console.error(`%c${err.name}: ${err.message}`, 'color: red');
-  }
+    const baseCallLastSlash = log.coordinates.lastIndexOf('/') - 1;
+    const baseCallPenultimateSlash = log.coordinates.lastIndexOf('/', baseCallLastSlash);
+    const baseCallLocation = log.coordinates.substr(baseCallPenultimateSlash);
+    console.groupCollapsed('%cevaluated @ ' + baseCallLocation, 'color:grey');
+    {
+      console.log(log.coordinates);
+    }
+    console.groupEnd();
+  };
 
   evaluate.renderBehavior = (func, log) => {
     if (log.empty) {
@@ -623,6 +621,8 @@ const evaluate = (() => {
 
   return Object.freeze(evaluate);
 })()
+
+
 /*
   Copyright 2019 janke-learning
 
@@ -637,5 +637,5 @@ const evaluate = (() => {
   GNU General Public License for more details.
 
   You should have received a copy of the GNU General Public License
-  along with this program.  If not, see < https://www.gnu.org/licenses/lgpl-3.0.html>.
+  along with this program.  If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.
 */
