@@ -559,7 +559,9 @@ const evaluate = (() => {
 
     const url = log.isBehavior
       ? "http://janke-learning.github.io/parsonizer/?snippet=" + deTabbed
-      : "http://www.pythontutor.com/live.html#code=" + deTabbed + "&cumulative=false&curInstr=2&heapPrimitives=nevernest&mode=display&origin=opt-live.js&py=js&rawInputLstJSON=%5B%5D&textReferences=false";
+      : "http://www.pythontutor.com/javascript.html#code=" + deTabbed + "&curInstr=0&mode=display&origin=opt-frontend.js&py=js&rawInputLstJSON=%5B%5D";
+    // unusing live edit links to emphasize source vs. runtime
+    // : "http://www.pythontutor.com/live.html#code=" + deTabbed + "&cumulative=false&curInstr=2&heapPrimitives=nevernest&mode=display&origin=opt-live.js&py=js&rawInputLstJSON=%5B%5D&textReferences=false";
 
     const a = document.createElement('a');
 
